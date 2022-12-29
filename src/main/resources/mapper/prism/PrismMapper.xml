@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="exam.test.prism.mapper.PrismMapper">
+
+<select id="selectResearchId" resultType="exam.test.prism.dto.PrismResearchDto">
+/* Query ID : selectResearchId */
+select research_id,row_number() over(order by research_id)as rowNum
+from   policy_organ_research
+where  del_yn = '0'
+group by research_id 
+order by research_id asc
+</select>
+
+<!-- 정책연구파일정보 다운로드 대상 조회 -->
+<select id="selectPrismFileDownload" resultType="exam.test.prism.dto.PrismResearchDto">
+/* Query ID : selectPrismFileDownload */
+select research_id
+     , file_div
+     , file_ono
+     , file_sply_path
+     , file_save_path
+     , orgn_file_nm
+     , save_file_nm
+     , ext
+from   policy_organ_research_file
+where  file_save_path is null
+order by research_id
+       , file_div
+       , file_ono
+</select>
+
+<!-- 정책연구 기관별 과제 목록 등록 -->
+<insert id="insertPrismResearchDetail">
+/* Query ID : PrismMapper.insertPrismResearch*/
+insert into policy_organ_research
+(
+    research_id
+  , research_nm
+  , research_sta_dt
+  , research_end_dt
+  , charge_organ_nm
+  , charge_dept_nm
+  , charge_tel_no
+  , biz_category_id
+  , biz_category_nm
+  , research_outline_cont
+  , contract_organ_id
+  , contract_organ_nm
+  , contract_researcher_nm
+  , contract_dt
+  , contract_type_nm
+  , contract_amt
+  , kogl_open_yn
+  , kogl_cont 
+)
+values
+(
+     #{research_id}   /* 회의일자                 */
+   , #{research_nm}   /* xcode                    */
+   , replace(#{research_sta_dt},'-','')   /* 회의일자                 */
+   , replace(#{research_end_dt},'-','')   /* xcode                    */
+   , #{charge_organ_nm}   /* 회의일자                 */
+   , #{charge_dept_nm}   /* xcode                    */
+   , replace(#{charge_tel_no},'-','')   /* 회의일자                 */
+   , #{biz_category_id}   /* xcode                    */
+   , #{biz_category_nm}   /* 회의일자                 */
+   , #{research_outline_cont}   /* xcode                    */
+   , #{contract_organ_id}   /* 회의일자                 */
+   , #{contract_organ_nm}   /* xcode                    */
+   , #{contract_researcher_nm}   /* 회의일자                 */
+   , replace(#{contract_dt},'-','')   /* xcode                    */
+   , #{contract_type_nm}   /* 회의일자                 */
+   , replace(#{contract_amt},'원','')::numeric   /* xcode                    */
+   , (select 
+      case 
+      when #{kogl_open_yn} like '%동의%' then 'Y'
+      ELSE 'N'
+      END 
+      from policy_organ_research
+      where kogl_open_yn = #{kogl_open_yn}
+       )   /* 회의일자                 */
+   , #{kogl_cont}   /* xcode                    */
+)
+on conflict(research_id)
+do update
+set 
+  research_id            = excluded.research_id
+, research_nm            = #{research_nm}
+, research_sta_dt        = replace(#{research_sta_dt},'-','')
+, research_end_dt        = replace(#{research_end_dt},'-','')
+, charge_organ_nm       = #{charge_organ_nm}
+, charge_dept_nm         = #{charge_dept_nm}
+, charge_tel_no          = replace(#{charge_tel_no},'-','')
+, biz_category_id        = #{biz_category_id}
+, biz_category_nm        = #{biz_category_nm}
+, research_outline_cont  = #{research_outline_cont}
+, contract_organ_id      = #{contract_organ_id}
+, contract_organ_nm      = #{contract_organ_nm}
+, contract_researcher_nm = #{contract_researcher_nm}
+, contract_dt            = replace(#{contract_dt},'-','')
+, contract_type_nm       = #{contract_type_nm}
+, contract_amt           = replace(#{contract_amt},'원','')::numeric
+, kogl_open_yn           = (select 
+      case 
+      when #{kogl_open_yn} like '%동의%' then kogl_open_yn ='Y'
+      ELSE kogl_open_yn ='N'
+      END 
+      from policy_organ_research
+      where kogl_open_yn = #{kogl_open_yn}
+       )
+, kogl_cont              = #{research_nm}
+
+</insert>
+
+<!-- 정책연구 기관별 과제 목록 등록 -->
+<insert id="insertPrismResearchList">
+/* Query ID : PrismMapper.insertPrismResearchList*/
+insert into policy_organ_research
+(
+    research_id
+  , issued_yy
+  , report_open_yn
+
+)
+values
+<foreach item="item" collection="list" separator=",">
+
+(
+    trim(#{item.research_id},'　')   /* 회의일자                 */
+  , #{item.issued_yy}   /* xcode                    */
+  , replace(replace(replace(#{item.report_open_yn},'부분공개','y'),'비공개','n'),'공개','y')   /* xcgcd                    */
+)
+</foreach>
+on conflict on constraint policy_organ_research_pk
+do update set
+ research_id = excluded.research_id
+
+</insert>
+
+<!-- 정책연구 기관별 과제 파일 정보 등록 -->
+<insert id="insertPrismResearchFile">
+/* Query ID : PrismMapper.insertPrismResearchFile*/
+<selectKey resultType="int" keyProperty="file_ono" order="BEFORE">
+select coalesce(max(file_ono), 0) + 1
+from   policy_organ_research_file
+where  research_id = #{research_id}
+</selectKey>
+insert into policy_organ_research_file
+(
+    research_id
+  , file_div
+  , file_ono
+  , file_div_nm
+  , file_sply_path
+  , file_save_path
+  , orgn_file_nm
+  , save_file_nm
+  , ext
+
+)
+values
+(
+     #{research_id}   /* 회의일자                 */
+   , '013'  /* xcode                    */
+   , #{file_ono}   /* xcode                    */
+   , #{file_div_nm}   /* 회의일자                 */
+   , #{file_sply_path}   /* xcode                    */
+   , #{file_save_path}   /* 회의일자                 */
+   , #{orgn_file_nm}   /* xcode                    */
+   , #{save_file_nm}   /* 회의일자                 */
+   , #{ext}   /* 회의일자                 */
+)
+on conflict(research_id,file_div,file_ono)
+do update
+set 
+  research_id    = excluded.research_id
+, file_div       = #{file_div}
+, file_ono       = #{file_ono}
+, file_div_nm    = #{file_div_nm}
+, file_sply_path = #{file_sply_path}
+, file_save_path = #{file_save_path}
+, orgn_file_nm   = #{orgn_file_nm}
+, save_file_nm   = #{save_file_nm}
+, ext            = #{ext}
+
+</insert>
+
+<!--정책 연구 파일정보 다운로드 결과 갱신 -->
+<update id="updatePrismFile">
+/* Query ID : updatePrismFile*/
+update policy_organ_research_file
+set    file_save_path = #{file_save_path}
+  ,    orgn_file_nm   = #{orgn_file_nm}
+  ,    save_file_nm   = #{save_file_nm}
+  ,    ext            = #{ext}
+where  research_id    = #{research_id}
+and    file_div       = #{file_div}
+and    file_ono       = #{file_ono}
+</update>
+
+</mapper>

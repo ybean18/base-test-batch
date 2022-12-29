@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="exam.test.common.mapper.CommonMapper">
+
+<select id="selectCatCdList" resultType="CommonCodeDto">
+/* Query ID : selectCatCdList */
+select cat_cd
+from   com_code_master
+where  del_yn = '0'
+group by cat_cd 
+order by cat_cd asc
+</select>
+
+<select id="selectCommonCodeList" resultType="CommonCodeDto">
+/* Query ID : selectCommonCodeList */
+select detl_cd                                as detl_cd
+     , coalesce(detl_cd_alias_nm, detl_cd_nm) as detl_cd_alias_nm
+from   com_code_master
+where  cat_cd = #{cat_cd}
+and    del_yn = '0'
+order by detl_cd asc
+</select>
+
+<select id="selectCommonCodeRuleSetList" resultType="CommonCodeDto">
+/* Query ID : selectCommonCodeRuleSetList */
+select detl_cd    as detl_cd
+     , detl_cd_nm as detl_cd_nm
+     , ref_cd_1   as ref_cd_1
+     , ref_cd_2   as ref_cd_2
+from   com_code_master
+where  1 = 1
+and    cat_cd = '901'
+and    del_yn = '0'
+order by detl_cd asc
+</select>
+
+<select id="selectComCommitteeList" resultType="CommonCodeDto">
+/* Query ID : selectComCommitteeList */
+select cmte_no  as detl_cd
+     , cmte_nm  as detl_cd_alias_nm
+from   com_committee
+where  cmte_nm != '전체'
+
+</select>
+
+<select id="selectComPoliticalPartyList" resultType="CommonCodeDto">
+/* Query ID : selectComPoliticalPartyList */
+select pparty_cd as detl_cd
+     , pparty_nm as detl_cd_alias_nm
+from   com_political_party 
+</select>
+
+<select id="selectComGovDeptList" resultType="CommonCodeDto">
+/* Query ID : selectComGovDeptList */
+select dept_no as detl_cd
+     , dept_nm as detl_cd_alias_nm
+from   com_gov_dept
+</select>
+
+</mapper>

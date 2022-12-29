@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="exam.test.common.mapper.SampleMapper">
+
+<select id="selectSampleList" resultType="SampleDto">
+/* Query ID : selectSampleList */
+select *
+from   sample_table
+order by paym_id desc
+limit 5
+</select>
+
+<insert id="insertSampleList">
+/* Query ID : insertSampleList */
+insert into sample_table
+(
+    paym_id
+  , paym_dt
+  , patsto_no
+  , patsto_nm
+)
+values
+(
+    (select max(paym_id) + 1 from sample_table)
+  , '2'
+  , '3'
+  , #{patsto_nm}
+)
+</insert>
+
+<insert id="insert01" parameterType="java.util.List">
+insert into mna_master
+(
+    mona_cd
+  , kor_nm
+  , chn_nm
+  , eng_nm
+  , birthday_div
+  , birthday
+  , gender
+  , ree_yn
+  , eno
+  , pparty_cd
+  , elctdist
+  , elctdist_div
+  , rpsnt_cmte_no
+  , tel_no
+  , email
+  , home_page
+  , aide
+  , scof
+  , secre
+  , profile
+  , office_rmno
+  , stat
+  , del_yn
+  , cre_pers
+  , cre_dttm
+  , upd_pers
+  , upd_dttm
+  , del_pers
+  , del_dttm
+)
+values
+<foreach item="item" collection="list" separator=",">
+(
+    #{item.mona_cd}
+  , #{item.kor_nm}
+  , #{item.chn_nm}
+  , #{item.eng_nm}
+  , #{item.birthday_div}
+  , replace(#{item.birthday}, '-', '')
+  , #{item.gender}
+  , case when #{item.ree_yn} = '재선' then '1'
+         else '0'
+    end 
+  , 1 
+  , (select pparty_cd from com_political_party where pparty_nm = #{item.poly_nm})
+  , #{item.elctdist}
+  , #{item.elctdist_div}
+  , #{item.rpsnt_cmte_no}
+  , #{item.tel_no}
+  , #{item.email}
+  , #{item.home_page}
+  , #{item.aide}
+  , #{item.scof}
+  , #{item.secre}
+  , #{item.profile}
+  , #{item.office_rmno}
+  , '00'::character varying
+  , '0'::character varying
+  , 'acro'::character varying
+  , to_char(now(), 'yyyymmddhh24miss'::text)
+  , 'acro'::character varying
+  , to_char(now(), 'yyyymmddhh24miss'::text)
+  , null
+  , null
+)
+</foreach>
+</insert>
+
+</mapper>

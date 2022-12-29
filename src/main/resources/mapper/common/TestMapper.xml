@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="exam.test.common.mapper.TestMapper">
+
+<select id="selectTestList" resultType="TestDto">
+		/* Query ID : selectTestList */
+		<!-- select mona_cd
+		from mna_career
+		group by mona_cd -->
+		
+		 select mona_cd
+			from 
+			 mna_career
+			 group by mona_cd
+			 order by mona_cd asc
+			 limit #{_pagesize} offset #{_skiprows}
+</select>
+
+	<insert id="insertTestList">
+		/* Query ID : insertTestList */
+		
+		insert 
+		  into mna_sns
+		  (
+		  	  mona_cd
+		  	, twitter_url
+		  	, facebook_url
+		  
+		  )
+		  values
+		  ( 
+		  
+		  	  #{mona_cd}
+		  	, null
+		  	, null
+		  
+		  )
+
+	</insert>
+
+
+
+
+<insert id="insertte" parameterType="java.util.List">
+
+	insert into mna_career
+	(     
+	    mona_cd
+	  ,	hist_ono
+	  , act_term
+	  , mona_hist
+	)
+	values
+	(
+		  #{mona_cd}
+		, (select coalesce(max(hist_ono),0 )+1 from mna_career where mona_cd = #{mona_cd})
+		, #{act_term}
+		, #{mona_hist}
+	)
+
+</insert>
+
+</mapper>
